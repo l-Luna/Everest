@@ -164,12 +164,19 @@ namespace Celeste.Mod {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
                 SetDllDirectory(Path.Combine(AppContext.BaseDirectory, $"lib64-win-{(Environment.Is64BitProcess ? "x64" : "x86")}")); // Windows is the only platform with an API like this
 
-                // Register an unmanaged DLL resolver so that we can take redirect fmod.dll to fmod64.dll
+                // Register an unmanaged DLL resolver so that we can take redirect fmod.dll to fmod64.dll or fmodL.dll as available
                 AssemblyLoadContext.Default.ResolvingUnmanagedDll += static (_, name) => {
-                    if (!name.Equals("fmod", StringComparison.OrdinalIgnoreCase) && !name.Equals("fmod.dll", StringComparison.OrdinalIgnoreCase))
+                    if (!(name.Equals("fmod", StringComparison.OrdinalIgnoreCase)
+                          || name.Equals("fmod.dll", StringComparison.OrdinalIgnoreCase)
+                          || name.Equals("fmodL", StringComparison.OrdinalIgnoreCase)
+                          || name.Equals("fmodL.dll", StringComparison.OrdinalIgnoreCase)))
                         return IntPtr.Zero;
 
-                    return NativeLibrary.Load("fmod64.dll");
+                    return NativeLibrary.TryLoad("fmod64L.dll", out IntPtr handle64L) ? handle64L :
+                        NativeLibrary.TryLoad("fmod64.dll", out IntPtr handle64) ? handle64 :
+                        NativeLibrary.TryLoad("fmodL.dll", out IntPtr handleL) ? handleL :
+                        NativeLibrary.TryLoad("fmod.dll", out IntPtr handle) ? handle :
+                        throw new DllNotFoundException("Unable to load any FMOD library 'fmod(64)(L).dll'.");
                 };
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 EnsureLibPathEnvVarSet("LD_LIBRARY_PATH", Path.Combine(AppContext.BaseDirectory, "lib64-linux"));

@@ -73,6 +73,10 @@ namespace Celeste {
                 ready = true;
             }
 
+            // Setup FMOD Logging.
+            // Don't check for errors, since that just means we're not using the logging version of FMOD.
+            FMOD.Debug.Initialize(DEBUG_FLAGS.LOG, DEBUG_MODE.CALLBACK, FmodLog);
+
             Settings.Instance.LaunchWithFMODLiveUpdate = fmodLiveUpdate;
 
             // Original code loads audio banks in GameLoader.LoadThread.
@@ -379,6 +383,15 @@ namespace Celeste {
 
         private readonly static FILE_SEEKCALLBACK ModBankSeek = (IntPtr handle, uint pos, IntPtr userdata) => {
             modBankStreams[handle].Seek(pos, SeekOrigin.Begin);
+            return RESULT.OK;
+        };
+
+        private readonly static DEBUG_CALLBACK FmodLog = (flags, file, line, func, message) => {
+            LogLevel level =
+                flags.HasFlag(DEBUG_FLAGS.ERROR) ? LogLevel.Error :
+                flags.HasFlag(DEBUG_FLAGS.WARNING) ? LogLevel.Warn :
+                LogLevel.Verbose; // it's *very* verbose at the "info" level
+            Logger.Log(level, "FMOD", $"[{file}:{func}:{line}]: {message}");
             return RESULT.OK;
         };
 
