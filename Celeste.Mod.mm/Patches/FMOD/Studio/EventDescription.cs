@@ -33,6 +33,9 @@ public class patch_EventDescription : EventDescription {
     }
 
     [MonoModReplace]
+    public new RESULT hasCue(out bool cue) => FMOD_Studio_EventDescription_HasSustainPoint(rawPtr, out cue);
+
+    [MonoModReplace]
     public new RESULT getMinimumDistance(out float distance) => FMOD_Studio_EventDescription_GetMinMaxDistance(rawPtr, out distance, out _);
 
     [MonoModReplace]
@@ -41,25 +44,35 @@ public class patch_EventDescription : EventDescription {
     [DllImport("fmodstudio")]
     private static extern RESULT FMOD_Studio_EventDescription_GetParameterDescriptionCount(
         IntPtr eventdescription,
-        out int count);
+        out int count
+    );
 
     [DllImport("fmodstudio")]
     private static extern RESULT FMOD_Studio_EventDescription_GetParameterDescriptionByIndex(
         IntPtr eventdescription,
         int index,
-        out PARAMETER_DESCRIPTION_INTERNAL parameter);
+        out PARAMETER_DESCRIPTION_INTERNAL parameter
+    );
 
     [DllImport("fmodstudio")]
     private static extern RESULT FMOD_Studio_EventDescription_GetParameterDescriptionByName(
         IntPtr eventdescription,
         byte[] name,
-        out PARAMETER_DESCRIPTION_INTERNAL parameter);
+        out PARAMETER_DESCRIPTION_INTERNAL parameter
+    );
+
+    [DllImport("fmodstudio")]
+    private static extern RESULT FMOD_Studio_EventDescription_HasSustainPoint(
+        IntPtr eventdescription,
+        out bool hasSustain
+    );
 
     [DllImport("fmodstudio")]
     private static extern RESULT FMOD_Studio_EventDescription_GetMinMaxDistance(
         IntPtr eventdescription,
         out float min,
-        out float max);
+        out float max
+    );
 
     // it's not called internal for nothing
     internal struct PARAMETER_DESCRIPTION_INTERNAL {
