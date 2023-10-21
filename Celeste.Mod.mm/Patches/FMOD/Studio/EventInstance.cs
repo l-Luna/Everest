@@ -17,29 +17,6 @@ public class patch_EventInstance : EventInstance {
     public new RESULT setParameterValue(string name, float value) =>
         FMOD_Studio_EventInstance_SetParameterByName(rawPtr, Encoding.UTF8.GetBytes(name + "\0"), value, false);
 
-    /*[MonoModReplace]
-    public RESULT getParameter(string name, out ParameterInstance instance) {
-        instance = null;
-        RESULT parameter2 = FMOD_Studio_EventInstance_GetParameterDescriptionByName(rawPtr, Encoding.UTF8.GetBytes(name + "\0"), out IntPtr parameter1);
-        if (parameter2 != RESULT.OK)
-            return parameter2;
-        instance = new ParameterInstance(parameter1);
-        return parameter2;
-    }
-
-    [MonoModReplace]
-    public RESULT getParameterCount(out int count) => FMOD_Studio_EventInstance_GetParameterDescriptionCount(rawPtr, out count);
-
-    [MonoModReplace]
-    public RESULT getParameterByIndex(int index, out ParameterInstance instance) {
-        instance = null;
-        RESULT parameterByIndex = FMOD_Studio_EventInstance_GetParameterDescriptionByIndex(rawPtr, index, out IntPtr parameter);
-        if (parameterByIndex != RESULT.OK)
-            return parameterByIndex;
-        instance = new ParameterInstance(parameter);
-        return parameterByIndex;
-    }*/
-
     [MonoModReplace]
     public new RESULT triggerCue() =>
         FMOD_Studio_EventInstance_KeyOff(rawPtr);
@@ -59,23 +36,6 @@ public class patch_EventInstance : EventInstance {
         float value,
         bool ignoreSeekSpeed
     );
-    
-    /*[DllImport("fmodstudio")]
-    private static extern RESULT FMOD_Studio_EventInstance_GetParameterDescriptionByName(
-        IntPtr _event,
-        byte[] name,
-        out IntPtr parameter);
-
-    [DllImport("fmodstudio")]
-    private static extern RESULT FMOD_Studio_EventInstance_GetParameterDescriptionByIndex(
-        IntPtr _event,
-        int index,
-        out IntPtr parameter);
-
-    [DllImport("fmodstudio")]
-    private static extern RESULT FMOD_Studio_EventInstance_GetParameterDescriptionCount(
-        IntPtr _event,
-        out int count);*/
 
     [DllImport("fmodstudio")]
     private static extern RESULT FMOD_Studio_EventInstance_KeyOff(IntPtr _event);

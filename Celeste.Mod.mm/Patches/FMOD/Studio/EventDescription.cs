@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MonoMod;
+using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -8,9 +9,11 @@ namespace FMOD.Studio;
 public class patch_EventDescription : EventDescription {
     public patch_EventDescription(IntPtr raw) : base(raw) {}
 
-    public RESULT getParameterCount(out int count) => FMOD_Studio_EventDescription_GetParameterDescriptionCount(rawPtr, out count);
+    [MonoModReplace]
+    public new RESULT getParameterCount(out int count) => FMOD_Studio_EventDescription_GetParameterDescriptionCount(rawPtr, out count);
 
-    public RESULT getParameterByIndex(int index, out PARAMETER_DESCRIPTION parameter) {
+    [MonoModReplace]
+    public new RESULT getParameterByIndex(int index, out PARAMETER_DESCRIPTION parameter) {
         parameter = new PARAMETER_DESCRIPTION();
         RESULT res = FMOD_Studio_EventDescription_GetParameterDescriptionByIndex(rawPtr, index, out PARAMETER_DESCRIPTION_INTERNAL param);
         if (res != RESULT.OK)
@@ -19,7 +22,8 @@ public class patch_EventDescription : EventDescription {
         return res;
     }
 
-    public RESULT getParameter(string name, out PARAMETER_DESCRIPTION parameter) {
+    [MonoModReplace]
+    public new RESULT getParameter(string name, out PARAMETER_DESCRIPTION parameter) {
         parameter = new PARAMETER_DESCRIPTION();
         RESULT res = FMOD_Studio_EventDescription_GetParameterDescriptionByName(rawPtr, Encoding.UTF8.GetBytes(name + "\0"), out PARAMETER_DESCRIPTION_INTERNAL param);
         if (res != RESULT.OK)
@@ -27,6 +31,12 @@ public class patch_EventDescription : EventDescription {
         param.assign(out parameter);
         return res;
     }
+
+    [MonoModReplace]
+    public new RESULT getMinimumDistance(out float distance) => FMOD_Studio_EventDescription_GetMinMaxDistance(rawPtr, out distance, out _);
+
+    [MonoModReplace]
+    public new RESULT getMaximumDistance(out float distance) => FMOD_Studio_EventDescription_GetMinMaxDistance(rawPtr, out _, out distance);
 
     [DllImport("fmodstudio")]
     private static extern RESULT FMOD_Studio_EventDescription_GetParameterDescriptionCount(
@@ -44,7 +54,13 @@ public class patch_EventDescription : EventDescription {
         IntPtr eventdescription,
         byte[] name,
         out PARAMETER_DESCRIPTION_INTERNAL parameter);
-    
+
+    [DllImport("fmodstudio")]
+    private static extern RESULT FMOD_Studio_EventDescription_GetMinMaxDistance(
+        IntPtr eventdescription,
+        out float min,
+        out float max);
+
     // it's not called internal for nothing
     internal struct PARAMETER_DESCRIPTION_INTERNAL {
         public IntPtr name;
